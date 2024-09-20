@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>ELAN Commander</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+  
+<style>
+/*!
+ * Copyright 2022 Wolfgang Barth
+ * barth.wolf@gmail.com
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
+ * documentation files (the "Software"), to deal in the Software without restriction, including without
+ * limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies 
+ * of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE 
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS 
+ * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT 
+ * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+ 
+#dropZone {
+  width: 400px; 
+  height: 200px; 
+  background-color:  #f8f9f9;
+  border-color: gray;
+  border-style: dashed;
+  text-align: center;
+  padding: 50px 0;
+}
+
+#dropZoneText {
+  color: gray;
+}
+
+tr:nth-child(even){
+  background-color: #f2f2f2;
+}
+
+tr:hover {
+  background-color: #ddd;
+}
+
+td {
+  padding-left: 6px;
+}
+
+th {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  padding-left: 6px;
+  text-align: left;
+  background-color:  #f8c471;
+  color: white;
+}
+
+#wrapper {
+  width:100%;
+  margin: 0;
+  height: 290px;
+}
+
+#first-div {
+  width:50%;
+  margin : 0;
+  float : left ;
+  padding: 20px;
+}
+
+#second-div {
+  width:50%;
+  margin : 0;
+  float : left ;
+} 
+
+#headline{
+  color: gray;
+  padding: 10px;
+  padding-bottom: 0px;
+  font-family: Arial;
+  font-weight: bold;
+}
+
+#headhr {
+  color: gray;
+  background-color: gray;
+  height:3px;
+}
+
+#description {
+  color: gray;
+  margin-top:0px;
+  font-size:20px;
+}
+.list {
+  color: gray;
+  margin-top:0px;
+  font-size:20px;
+}
+
+#resultDisplay {
+  padding: 20px;
+}
+  </style>
+<script>
+
+</script>
+</head>
+
+<body>
+<div id="wrapper">
+	<h2 id="headline"><span class="glyphicon glyphicon-list-alt"></span> ELAN commander
+	<button style="float:right;font-size:14px;padding:10px;" onclick="cleanDisplay()"><span class="glyphicon glyphicon-remove"></span> clear display</button>
+	<button style="float:right;font-size:14px;padding:10px;" onclick="sortem()"><span class="glyphicon glyphicon-sort-by-alphabet"></span> sort files</button>
+	<button style="float:right;font-size:14px;padding:10px;" onclick="exportFile()"><span class="glyphicon glyphicon-export"></span> export config</button>
+	<button style="float:right;font-size:14px;padding:10px;" onclick="howTo()"><span class="glyphicon glyphicon-info-sign"></span> guidelines</button>
+	</h2>
+	
+	<hr id="headhr" > 
+	<div id="first-div">
+		<p id="description">look inside the elan files by dragging them from your folder and dropping them on the right. 
+		   the found column shows all symbols and letters found in the ELAN annotations</p>
+		<ul>
+			<li class="list">In the replace column you can indicate what the symbol/letter should be replaced with</li>
+			<li class="list">click apply to download updated copies of the files</li>
+		</ul>
+		
+	</div> 
+	
+	<div id="second-div" >
+		<div id="dropZone" >
+			<h2 id="dropZoneText">drop elan files here <span class="glyphicon glyphicon-file"></span></h2>
+		</div>
+	</div>
+</div>
+<br>
+<br>
+
+
+
+<div id="letterDictDiv" style="text-align: center;">
+
+  <br>
+<button onclick="replaceItAll()" style="float:center;font-size:14px;padding:10px;">apply</button>
+<br>
+<br>
+<table id="myTable" style="margin-left: 44%">
+    <tr>
+      <th style="padding:10px;">found</th>
+      <th style="padding:10px;">replace</th>
+      <th style="padding:10px;">count</th>
+    </tr>
+  </table>
+
+
+</div>
+
+
+<div id="resultDisplay"></div>
+
+</body>
+
+<script>
+
+function howTo() {
+   // all the guidelines in a pop up
+   
+    alert('GUIDELINES' + '\n\n'
+        + 'IMPORTANT: The ELAN files are not altered on your computer in any way and are ' + '\n'
+        +'not sent off to the server. The application lives only in your local browser!' + '\n\n'
+        +'ELAN Inventory shows a summary of your ELAN files and compiles an exportable' + '\n'
+        +'dictionary which can be used to create an ANNIS corpus.' + '\n\n' 
+		
+		+'The dictionary contains:' + '\n\n'
+		+'  ~  file names' + '\n\n'
+		+'  ~  list of main tiers (please check the boxes for each main tier. Main tiers are' + '\n'
+        +'      the tiers which will form the lineup of words in the corpus. The other' + '\n'
+        +'      tiers usually reference the main tiers as annotations. You can select' + '\n'
+        +'      serveral tiers as main tiers.)' + '\n\n'
+		+'  ~  list of tiers which should be ignored in the corpus (please uncheck the boxes in the include' + '\n'
+		+'      columns.)' + '\n\n'		
+		+'  ~  tier names in each file and their content' + '\n\n'
+		+'Just drag and drop the files onto the grey area to see their content. The tables indicate the number of '
+		+'annotations, words and letters in each tier.' + '\n\n'
+		+'For more information please contact: Wolfgang.barth@anu.edu.au ' + '\n\n'
+		+'Centre of Excellence for the Dynamics of Language, 2020' + '\n\n\n\n')
+}
+
+// BUTTONS FUNCTIONS -------------------------------------------------------------------------------------
+
+function cleanDisplay() {
+  // does as it says, it cleans the display and removes the tables
+  
+  var display = document.getElementById('resultDisplay')
+  display.innerHTML = '';
+}
+
+// EVEN HANDLERS ------------------------------------------------------------------------------------------
+
+var dropZone = document.getElementById('dropZone');
+
+// Optional.   Show the copy icon when dragging over.  Seems to only work for chrome.
+dropZone.addEventListener('dragover', function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+});
+
+// LOADING DATA ON DROP AND BUILDING THE TABLES-------------------------------------------------------------------------------------------
+
+function add_header(content) {
+  // builds table headers
+  
+  var td = document.createElement('th');
+  var element = document.createElement("b");
+  element.innerHTML = content;
+  td.appendChild(element)  
+  return td
+};
+
+function add_checkbox(id_of_box, isChecked) {  
+    // make the checkbox for inclusion in export file
+	
+	var td2 = document.createElement('td');
+	var newCheckBox = document.createElement('input');
+	newCheckBox.type = 'checkbox';
+	newCheckBox.checked = isChecked;
+	newCheckBox.class = "form-check-input";
+	newCheckBox.id = id_of_box; // need unique Ids!
+	newCheckBox.value = '';
+	td2.appendChild(newCheckBox)
+	return td2
+};		
+
+function tableCreate(testList) {
+	// puts together the table for each file
+
+	var showbox = document.getElementById('resultDisplay');
+
+	// create div to hold each table
+	var tableDiv = document.createElement('div');
+	//tableDiv.appendChild(document.createElement('HR'))
+	tableDiv.id = testList[0][2];
+	var element = document.createElement("h4");
+
+	element.innerHTML = testList[0][2]
+	tableDiv.appendChild(element)
+
+	var tbl = document.createElement('table');
+
+	tbl.style.width = '100%';  
+	var tbdy = document.createElement('tbody');
+
+	var tr1 = document.createElement('tr');
+
+	tr1.appendChild(add_header('tier name'))
+	tr1.appendChild(add_header('include'))
+	tr1.appendChild(add_header('main'))
+	tr1.appendChild(add_header('content'))
+	tr1.appendChild(add_header('annos'))
+	tr1.appendChild(add_header('words'))
+	tr1.appendChild(add_header('letters'))
+
+	tr1.name = 'title'
+	tbdy.appendChild(tr1);
+
+	var annotationCount = 0
+	var wordCount = 0
+	var letterCount = 0
+	
+	for (var i = 0; i < testList.length; i++) {
+		var tr = document.createElement('tr');
+
+		// make the tierID
+		var td = document.createElement('td');
+		var btn = document.createElement('b')
+		btn.style.cssText = 'width:250px;';
+		btn.innerHTML = testList[i][0]; 
+		td.appendChild(btn)
+		tr.appendChild(td)
+		
+		// add the checkboxes
+		tr.appendChild(add_checkbox(testList[i][2] + '_' + testList[i][0] + '_included', true))
+		tr.appendChild(add_checkbox(testList[i][2] + '_' + testList[i][0] + '_main', false))
+
+		// make the annotation content and add it
+		var td4 = document.createElement('td');
+		td4.appendChild(document.createTextNode(testList[i][1].substr(0, 120) + '...'))
+		td4.style.cssText = 'width:70%;';
+		tr.appendChild(td4)
+		
+		// adds the number of annotations
+		var td5 = document.createElement('td');
+		td5.appendChild(document.createTextNode(testList[i][1].split(' | ').length))
+		annotationCount += testList[i][1].split(' | ').length;
+		tr.appendChild(td5)
+		
+		// adds the number of words
+		var td6 = document.createElement('td');
+		td6.appendChild(document.createTextNode((testList[i][1].replace('  ', ' ').split(' ').length) - 1))
+		wordCount += testList[i][1].replace('  ', ' ').split(' ').length;
+		tr.appendChild(td6)
+		
+		// adds the number of letters
+		var td7 = document.createElement('td');
+		td7.appendChild(document.createTextNode(testList[i][1].replace(' | ', '').length))
+		letterCount += testList[i][1].replace(' | ', '').length
+		tr.appendChild(td7)
+
+		tbdy.appendChild(tr);	
+    }
+  
+  // create summary row in each table
+  var trsummary = document.createElement('tr');
+  for (var x = 0; x < 3; x++) {
+	  var td = document.createElement('td');
+	  td.appendChild(document.createTextNode(' '))
+	  td.style.cssText = 'background-color:  white;'
+	  trsummary.appendChild(td);
+  }
+   
+  var tdLable = document.createElement('td');
+  tdLable.style.cssText = 'text-align:right; background-color:  white; padding-right:10px'
+  tdLable.appendChild(document.createTextNode('total:'))
+  trsummary.appendChild(tdLable)
+  
+  var tdannotationCount = document.createElement('td');
+  tdannotationCount.style.cssText = 'border: 1px solid gray;background-color:  #f8c471;'
+  tdannotationCount.appendChild(document.createTextNode(annotationCount))
+  trsummary.appendChild(tdannotationCount)
+
+  var tdwordCount = document.createElement('td');
+  tdwordCount.style.cssText = 'border: 1px solid gray;background-color:  #f8c471;'
+  tdwordCount.appendChild(document.createTextNode(wordCount))
+  trsummary.appendChild(tdwordCount)
+	
+  var tdletterCount = document.createElement('td');
+  tdletterCount.appendChild(document.createTextNode(letterCount))
+  tdletterCount.style.cssText = 'border: 1px solid gray;background-color:  #f8c471;'
+  trsummary.appendChild(tdletterCount)
+	
+  tbdy.appendChild(trsummary)
+  
+  // put the table together
+  tbl.appendChild(tbdy);
+  tableDiv.appendChild(tbl);
+  showbox.appendChild(tableDiv);
+};
+
+
+function handleFiles(file) {
+    // get all relevant content out of the xml structure of the file
+	
+	var fileName = file.name;
+	var basename = file.name.substring(0,file.name.length-4);
+
+	var reader = new FileReader();
+	
+	reader.readAsText(file, "UTF-8");
+	reader.fileName = file.name; // to get the filename into the reader
+
+	reader.onload = function (evt) {
+		var fileData = []
+		var text = evt.target.result  
+		
+		parser = new DOMParser();
+		
+		var xmlDoc = parser.parseFromString(text,"text/xml");
+		
+		var tiers = xmlDoc.getElementsByTagName("TIER")
+		
+		for (index = 0; index < tiers.length; ++index) {
+			
+			var tierData = []
+			var tierID = tiers[index].getAttribute('TIER_ID')
+
+			// make a string of the annotation content
+			var annotationList = []
+			var annos = tiers[index].getElementsByTagName('ANNOTATION')
+			
+			for (f = 0; f < annos.length; ++f) {
+
+
+				var annotationValue = annos[f].getElementsByTagName('ANNOTATION_VALUE')[0].innerHTML;
+				annotationList.push(annotationValue)  
+
+        for (g = 0; g < annotationValue.length; ++g) {
+          if (annotationValue[g] != " ") {
+            if (!(annotationValue[g] in letterDict)) {
+                letterDict[annotationValue[g]] = 0
+            }
+            letterDict[annotationValue[g]] += 1
+          }
+        }
+			}
+			
+			var annotationString = annotationList.join(' | ')
+			
+			tierData.push(tierID)
+			tierData.push(annotationString)
+			tierData.push(evt.target.fileName) // this is how the filename needs to get handled
+
+			fileData.push(tierData)
+		}
+
+    //console.log(JSON.stringify(letterDict))
+
+    // Reference to the HTML table
+    const table = document.getElementById("myTable");
+    var rows = table.getElementsByTagName('tr');
+
+    for (var i = rows.length - 1; i > 0; i--) {
+        table.deleteRow(i);
+    }
+
+    // Loop through the dictionary and create table rows
+    for (const key in letterDict) {
+      if (letterDict.hasOwnProperty(key)) {
+          var inputBox = document.createElement('input');
+
+          // Set attributes for the input (e.g., type, placeholder, name)
+          inputBox.setAttribute('type', 'text');
+          //inputBox.setAttribute('placeholder', key);
+          inputBox.setAttribute('name', key);
+          inputBox.setAttribute('value', key);
+
+          const row = table.insertRow();
+          const cell1 = row.insertCell(0);
+          const cell2 = row.insertCell(1);
+          const cell3 = row.insertCell(2);
+          cell1.innerHTML = key;
+          cell2.appendChild(inputBox)
+          cell3.innerHTML = letterDict[key];
+      }
+    }
+	tableCreate(fileData);
+	}
+  // Reference to the HTML table
+  const table = document.getElementById("myTable");
+}
+
+var allFiles = []
+var letterDict = {}
+// Get file data on drop
+dropZone.addEventListener('drop', function(e) {
+    
+  e.stopPropagation();
+  e.preventDefault();
+
+  var files = e.dataTransfer.files; // Array of all files
+  for (var i = 0; i < files.length; ++i) {   
+    allFiles.push(files[i])  
+    handleFiles(files[i]);
+
+  }            
+});
+
+function getLetterDictionary() {
+    // read the dictionary from the table on the UI 
+    var table = document.getElementById("myTable"); // Get a reference to the table
+    var dictionary = {}; // Create an empty dictionary
+
+    // Iterate through the rows of the table
+    for (var i = 1; i < table.rows.length; i++) {
+        var row = table.rows[i];
+        var key = row.cells[0].innerText; // Get the text from the first cell
+        var inputElement = row.cells[1].getElementsByTagName("input")[0]; // Get the input element
+        var value = inputElement.value;
+
+        // Add the key-value pair to the dictionary
+        dictionary[key] = value;
+    }
+    return dictionary
+
+}
+
+function replaceItAll() {
+
+  var letterDictionary = getLetterDictionary()
+
+  for (var h = 0; h < allFiles.length; ++h) { 
+
+    var file = allFiles[h]
+
+    cleanTheFile(file, letterDictionary)
+
+    
+
+  }
+}
+
+
+
+function cleanTheFile(file, dictionary) {
+  // looks for each dict entry in each annotation of each file and replaces it
+
+  var fileName2 = file.name;
+  var basename = file.name.substring(0,file.name.length-4);
+
+  var reader2 = new FileReader();
+  
+  reader2.readAsText(file, "UTF-8");
+  reader2.fileName = file.name; // to get the filename into the reader
+
+  reader2.onload = function (evt) {
+      var fileData = []
+      //console.log(reader2.fileName)
+      var text = evt.target.result  
+      
+      parser = new DOMParser();
+      
+      var xmlDoc2 = parser.parseFromString(text,"application/xml");
+      
+      // Get all <ANNOTATION_VALUE> elements
+      const annotationValueElements = xmlDoc2.getElementsByTagName('ANNOTATION_VALUE');
+
+      // Change the text content of all <ANNOTATION_VALUE> elements
+      for (let i = 0; i < annotationValueElements.length; i++) {
+          const element = annotationValueElements[i];
+          //console.log(element.textContent)
+          //element.textContent = 'NewValue';
+          for (var key in dictionary) {
+              
+              var value = dictionary[key];
+              if (value != key){
+                  const regex = new RegExp(key, 'g');
+
+                  element.textContent = element.textContent.replace(regex, value)
+              }  
+          }
+      }
+
+  const serializer = new XMLSerializer();
+  const modifiedXmlString = serializer.serializeToString(xmlDoc2)
+  download(modifiedXmlString, fileName2, "xml") 
+  }
+}
+
+function download(data, filename, type) {
+    // Function to download data to a file
+	// used by exportFile function
+	
+    var file2 = new Blob([data], {type: type});
+    
+    if (window.navigator.msSaveOrOpenBlob) // IE10+
+        window.navigator.msSaveOrOpenBlob(file2, filename);
+    else { // Others
+        var a = document.createElement("a"),
+                url = URL.createObjectURL(file2);
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);  
+        }, 0); 
+    }
+}
+
+</script>
+</html>
